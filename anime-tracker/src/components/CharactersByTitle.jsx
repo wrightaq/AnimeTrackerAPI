@@ -7,13 +7,16 @@
 
 // clicking actor name or image will redirect to actors character list
 
+//figure out what to do about multiple actors playing same character and the actors
+//playing the "young" version of characters
+
 
 import React from 'react';
 import { useState } from 'react';
 import { useQuery, gql } from "@apollo/client";
 
-const GET_CHARACTER_NAMES = gql `
-query GetCharacterNames($id: Int, $page: Int, $perPage: Int, $search: String){
+const GET_CHARACTER_NAMES_BY_TITLE = gql `
+query GetCharacterNamesByTitle($id: Int, $page: Int, $perPage: Int, $search: String){
   Media (id: $id, search: $search, type: ANIME) {
     characters(page: $page, perPage: $perPage, sort: ID) {
       pageInfo {
@@ -41,37 +44,11 @@ query GetCharacterNames($id: Int, $page: Int, $perPage: Int, $search: String){
   }
 }`
 
-// const GET_CHARACTER_NAMES = gql `
-// query GetCharacterNames($id: Int, $page: Int, $perPage: Int, $search: String) {
-//   Page (page: $page, perPage: $perPage) {
-//     pageInfo {
-//       currentPage
-//       hasNextPage
-//       perPage
-//     }
-//     media (id: $id, search: $search, type: ANIME) {
-//       id
-//       title {
-//         english
-//       }
-//       characters (sort: ID) {
-//         nodes{
-//           id
-//            name {
-//              full
-//            }
-//         }
-//       }
-//     }
-//   }
-//  }
-// `
-//FINISH PAGINATION, FIND OUT ABOUT'AT' FROM THE OTHER GITHUB REPO. BUTTON NOT CHANGING PAGES CURRENTLY
-//PREVIOUSLY WAS MAKING THE LIST SHORTER AND SHORTER INSTEAD OF MOVING TO THE NEXT PAGE
+
 const CharactersByTitle = ({search}) => {
   console.log("search", search)
 const [page, setPage] = useState(1)
-const { loading, error, data } = useQuery(GET_CHARACTER_NAMES, {
+const { loading, error, data } = useQuery(GET_CHARACTER_NAMES_BY_TITLE, {
   variables: {
     search: search,
     page: page,
@@ -93,12 +70,12 @@ const handlePage = (event) => {
   console.log("page:", page)
 }
 console.log("data:", data)
-
 return (
+
   <div>
-    {data.Media.characters.edges.map(({ node }) => (
+    {data.Media.characters.edges.map(({ node, voiceActors }) => (
         <li key={node.id}>
-          {node.name.full}
+          {node.name.full} voiced by {voiceActors[0].name.full}
         </li>
     ))}
     <button name='more' onClick={handlePage}>more</button>

@@ -15,6 +15,22 @@ import React from 'react';
 import { useState } from 'react';
 import { useQuery, gql } from "@apollo/client";
 
+
+// const cache = new InMemoryCache({
+//   typePolicies: {
+//     Title: {
+//       fields: {
+//         characters: {
+//           merge(existing = [], incoming: any[]) {
+//             return [...existing, ...incoming];
+//           },
+//         },
+//       },
+//     },
+//   },
+// });
+
+
 const GET_CHARACTER_NAMES_BY_TITLE = gql `
 query GetCharacterNamesByTitle($id: Int, $page: Int, $perPage: Int, $search: String){
   Media (id: $id, search: $search, type: ANIME) {
@@ -52,7 +68,7 @@ const { loading, error, data } = useQuery(GET_CHARACTER_NAMES_BY_TITLE, {
   variables: {
     search: search,
     page: page,
-    perPage: 25
+    perPage: 25,
     },
 });
 

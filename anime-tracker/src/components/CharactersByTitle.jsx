@@ -34,6 +34,7 @@ import { useQuery, gql } from "@apollo/client";
 const GET_CHARACTER_NAMES_BY_TITLE = gql `
 query GetCharacterNamesByTitle($id: Int, $page: Int, $perPage: Int, $search: String){
   Media (id: $id, search: $search, type: ANIME) {
+    id
     characters(page: $page, perPage: $perPage, sort: ID) {
       pageInfo {
         total

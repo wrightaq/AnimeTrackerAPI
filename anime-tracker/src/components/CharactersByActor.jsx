@@ -15,6 +15,7 @@ import { useQuery, gql } from "@apollo/client";
 const GET_CHARACTER_NAMES_BY_ACTOR = gql `
 query GetCharacterNamesByActor($id: Int, $page: Int, $perPage: Int, $search: String){
   Staff (id: $id, search: $search ) {
+    id
     characters(page: $page, perPage: $perPage, sort: ID) {
       pageInfo {
         total

@@ -27,6 +27,7 @@ const App = () => {
   };
 
   const handleSearch = (event) => {
+    console.log("search:", search)
     LoadComponent(event.target.name);
   };
 

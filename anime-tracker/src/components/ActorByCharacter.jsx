@@ -2,6 +2,7 @@ import React from 'react';
 import { useState } from 'react';
 import { useQuery, gql } from "@apollo/client";
 
+
 // header of the character name and image
 
 //       List of cards:
@@ -15,9 +16,10 @@ import { useQuery, gql } from "@apollo/client";
 //       anime title redirects to anime title character list
 
 const GET_ACTOR_NAME_BY_CHARACTER = gql `
-query GetActorNameByCharacter($id: Int, $page: Int, $perPage: Int, $search: String){
+query GetActorNameByCharacter($id: Int, $offset: Int, $limit: Int $search: String){
   Character (id: $id, search: $search) {
-    media(page: $page, perPage: $perPage, sort: ID) {
+    id
+    media(page: $offset, perPage: $limit, sort: ID) {
       pageInfo {
         total
         perPage
@@ -27,6 +29,7 @@ query GetActorNameByCharacter($id: Int, $page: Int, $perPage: Int, $search: Stri
       }
       edges {
         voiceActors (language: JAPANESE) {
+          id
           name {
             full
           }
@@ -40,16 +43,16 @@ query GetActorNameByCharacter($id: Int, $page: Int, $perPage: Int, $search: Stri
       }
     }
   }
-}`
+}`;
+
 
 const ActorByCharacter = ({search}) => {
-  console.log("search", search)
-  const [page, setPage] = useState(1)
-  const { loading, error, data } = useQuery(GET_ACTOR_NAME_BY_CHARACTER, {
+
+  const { loading, error, data, fetchMore } = useQuery(GET_ACTOR_NAME_BY_CHARACTER, {
     variables: {
       search: search,
-      page: page,
-      perPage: 25
+      offset: 0,
+      limit: 5
       },
   });
 
@@ -57,16 +60,17 @@ const ActorByCharacter = ({search}) => {
   if (error) return <p>Error : {error.message}</p>;
 
   //PAGINATION
-  const handlePage = (event) => {
-    if (event.target.name === 'more') {
-      setPage(page + 1)
-    }
-    if (event.target.name === 'back') {
-      setPage(page - 1)
-    }
-    console.log("page:", page)
-  }
+  // const handlePage = (event) => {
+  //   if (event.target.name === 'more') {
+  //     setPage(page + 1)
+  //   }
+  //   if (event.target.name === 'back') {
+  //     setPage(page - 1)
+  //   }
+  //   console.log("page:", page)
+  // }
   console.log("data:", data)
+
   return (
     <div>
       {data.Character.media.edges.map(({ node, voiceActors }) => (
@@ -76,7 +80,15 @@ const ActorByCharacter = ({search}) => {
           ))} in {node.title.english}
         </li>
       ))}
-      <button name='more' onClick={handlePage}>more</button>
+      <button
+        onClick={()=>
+          fetchMore({variables: {
+            offset: data.Character.media.edges.length
+          }})
+        }
+        >
+        more
+      </button>
     </div>
   )
 }

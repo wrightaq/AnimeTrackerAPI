@@ -1,28 +1,16 @@
-import React from 'react';
-import { useQuery, gql } from "@apollo/client";
+// import {React, useState} from 'react';
 
+// export const fetchMoreHandler = () => {
+//   const currentLength = data?.Character.media.edges.length || 0
+//   setOffset((offset) => offset + currentLength)
+// }
 
-const FeedData = (QUERY) => {
-  const { loading, error, data, fetchMore } = useQuery(QUERY, {
-    variables: {
-      offset: 0,
-      limit: 10
-    },
-  });
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error : {error.message}</p>;
-
-  return (
-    <button
-      entries={data.feed || []}
-      onLoadMore={() => fetchMore({
-        variables: {
-          offset: data.feed.length
-        },
-      })}
-    > more </button>
-  );
-}
-
-export default FeedData;
+// export const fetchPrevHandler = () => {
+//   let currentLength = data?.Character.media.edges.length || 0
+//   if (currentLength === 0) {
+//     currentLength = 2
+//   }
+//   setOffset((offset) =>
+//   offset - currentLength < 0 ? 0 : offset - currentLength
+//   )
+// }

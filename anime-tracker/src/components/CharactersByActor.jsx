@@ -13,10 +13,10 @@ import { useQuery, gql } from "@apollo/client";
 
 //ADD BUTTON TO TEST SEARCH
 const GET_CHARACTER_NAMES_BY_ACTOR = gql `
-query GetCharacterNamesByActor($id: Int, $page: Int, $perPage: Int, $search: String){
+query GetCharacterNamesByActor($id: Int, $offset: Int, $limit: Int $search: String){
   Staff (id: $id, search: $search ) {
     id
-    characters(page: $page, perPage: $perPage, sort: ID) {
+    characters(page: $offset, perPage: $limit, sort: ID) {
       pageInfo {
         total
         perPage
@@ -32,6 +32,7 @@ query GetCharacterNamesByActor($id: Int, $page: Int, $perPage: Int, $search: Str
           }
         }
         media {
+          id
           title {
             english
           }
@@ -42,39 +43,54 @@ query GetCharacterNamesByActor($id: Int, $page: Int, $perPage: Int, $search: Str
 }`
 
 const CharactersByActor = ({search}) => {
-  console.log("search", search)
-const [page, setPage] = useState(1)
-const { loading, error, data } = useQuery(GET_CHARACTER_NAMES_BY_ACTOR, {
-  variables: {
-    search: search,
-    page: page,
-    perPage: 25
+  const [offset, setOffset] = useState(0);
+  const { loading, error, data } = useQuery(GET_CHARACTER_NAMES_BY_ACTOR, {
+    variables: {
+      search: search,
+      offset: offset,
+      limit: 5
     },
-});
+  });
+
+ const fetchMoreHandler = () => {
+    const currentLength = data?.Staff.characters.edges.length || 0
+    setOffset((offset) => offset + currentLength)
+  }
+
+  const fetchPrevHandler = () => {
+    let currentLength = data?.Staff.characters.edges.length || 0
+    if (currentLength === 0) {
+      currentLength = 2
+    }
+    setOffset((offset) =>
+    offset - currentLength < 0 ? 0 : offset - currentLength
+    )
+  }
 
 if (loading) return <p>Loading...</p>;
 if (error) return <p>Error : {error.message}</p>;
 
-//PAGINATION
-const handlePage = (event) => {
-  if (event.target.name === 'more') {
-    setPage(page + 1)
-  }
-  if (event.target.name === 'back') {
-    setPage(page - 1)
-  }
-  console.log("page:", page)
-}
 console.log("data:", data)
-return (
 
+return (
   <div>
     {data.Staff.characters.edges.map(({ node, media }) => (
+      media.length > 1 ?
+       <div key={node.id}>
+        {node.name.full} in:
+        {media.map(({title}) => (
+          title.english ?
+            <li key={media.id}>
+              {title.english}
+            </li> : null
+          ))}
+        </div> :
         <li key={node.id}>
-          {node.name.full} in {media[0].title.english}
+        {node.name.full} in {media[0].title.english}
         </li>
     ))}
-    <button name='more' onClick={handlePage}>more</button>
+    <button onClick={fetchPrevHandler}>back</button>
+    <button onClick={fetchMoreHandler}>more</button>
   </div>
 )
 }

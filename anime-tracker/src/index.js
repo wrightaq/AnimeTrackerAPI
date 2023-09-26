@@ -14,13 +14,83 @@ const cache = new InMemoryCache({
     Character: {
       fields: {
         media: {
-          keyArgs: false,
-          merge: true,
-          edges: offsetLimitPagination()
+          ...offsetLimitPagination(),
+          read(existing, { args }) {
+              let res
+              if (existing) {
+                  res = existing.slice(
+                      args?.offset,
+                      args?.offset + args?.limit
+                  )
+              }
+              return res && res.length === args?.limit
+                  ? res
+                  : undefined
+          },
+        },
+      }
+    },
+    Media: {
+      fields: {
+        characters: {
+          ...offsetLimitPagination(),
+          read(existing, { args: { offset, limit }}) {
+            // A read function should always return undefined if existing is
+            // undefined. Returning undefined signals that the field is
+            // missing from the cache, which instructs Apollo Client to
+            // fetch its value from your GraphQL server.
+            return existing && existing.slice(offset, offset + limit);
+          },
+
+          // The keyArgs list and merge function are the same as above.
+          keyArgs: [],
+          merge(existing, incoming, { args: { offset = 0 }}) {
+            const merged = existing ? existing.slice(0) : [];
+            for (let i = 0; i < incoming.length; ++i) {
+              merged[offset + i] = incoming[i];
+            }
+            return merged;
+          },
+          // read(existing, { args }) {
+          //     let res
+          //     if (existing) {
+          //         res = existing.slice(
+          //             args?.offset,
+          //             args?.offset + args?.limit
+          //         )
+          //     }
+          //     return res && res.length === args?.limit
+          //         ? res
+          //         : undefined
+          // },
+        }
+      }
+    },
+    Staff: {
+      fields: {
+        characters: {
+          ...offsetLimitPagination(),
+          read(existing, { args: { offset, limit }}) {
+            // A read function should always return undefined if existing is
+            // undefined. Returning undefined signals that the field is
+            // missing from the cache, which instructs Apollo Client to
+            // fetch its value from your GraphQL server.
+            return existing && existing.slice(offset, offset + limit);
+          },
+
+          // The keyArgs list and merge function are the same as above.
+          keyArgs: [],
+          merge(existing, incoming, { args: { offset = 0 }}) {
+            const merged = existing ? existing.slice(0) : [];
+            for (let i = 0; i < incoming.length; ++i) {
+              merged[offset + i] = incoming[i];
+            }
+            return merged;
+          },
         }
       }
     }
-  },
+  }
 });
 
 // Supported in React 18+

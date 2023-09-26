@@ -15,7 +15,7 @@ const App = () => {
 
   useEffect(() => {
     search.current = input;
-  },[input])
+  },[input]);
 
   const LoadComponent = location => {
     const Component = React.lazy(() => import(`./components/${location}.jsx`));
@@ -27,7 +27,6 @@ const App = () => {
   };
 
   const handleSearch = (event) => {
-    console.log("search:", search)
     LoadComponent(event.target.name);
   };
 

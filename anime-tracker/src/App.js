@@ -5,11 +5,13 @@
 // //maybe add feature to see other things actor is in that haven't watched yet
 // //maybe add a seiyuu birthday feature
 
-import React, {useState, Suspense, useRef, useEffect} from 'react';
-import { useQuery, gql } from "@apollo/client";
+import React, { useState, useRef, useEffect } from 'react';
+import { Routes, Route, Link } from 'react-router-dom';
+import ActorByCharacter from './components/ActorByCharacter.jsx';
+import CharactersByActor from './components/CharactersByActor.jsx';
+import CharactersByTitle from './components/CharactersByTitle.jsx';
 
 const App = () => {
-  const [component, setComponent] = useState(null);
   const [input, setInput] = useState('');
   const search = useRef('');
 
@@ -17,17 +19,8 @@ const App = () => {
     search.current = input;
   },[input]);
 
-  const LoadComponent = location => {
-    const Component = React.lazy(() => import(`./components/${location}.jsx`));
-    setComponent(<Component search={search.current}/>);
-  };
-
   const handleInput = (event) => {
     setInput(event.target.value);
-  };
-
-  const handleSearch = (event) => {
-    LoadComponent(event.target.name);
   };
 
   return (
@@ -40,21 +33,29 @@ const App = () => {
         <input placeholder='enter title'></input>
         <button>Add</button>
       </h3>
-      <Suspense fallback={<div>Loading...</div>}>
-        <div>
-          <input placeholder='Search By Character' onChange={handleInput}></input>
-          <button name='ActorByCharacter' onClick={handleSearch}>Search</button>
-        </div>
-        <div>
-          <input placeholder='Search By Voice Actor' onChange={handleInput}></input>
-          <button name='CharactersByActor' onClick={handleSearch}>Search</button>
-        </div>
-        <div>
-          <input placeholder='Search By Title' onChange={handleInput}></input>
-          <button name='CharactersByTitle' onClick={handleSearch}>Search</button>
-        </div>
-        {component}
-      </Suspense>
+      <div>
+      <input placeholder='Search By Character' onChange={handleInput}></input>
+        <Link to={`ActorByCharacter/${search.current}`}>
+          <button>Search</button>
+        </Link>
+      </div>
+      <div>
+        <input placeholder='Search By Voice Actor' onChange={handleInput}></input>
+        <Link to={`CharactersByActor/${search.current}`}>
+          <button>Search</button>
+        </Link>
+      </div>
+      <div>
+        <input placeholder='Search By Title' onChange={handleInput}></input>
+        <Link to={`CharactersByTitle/${search.current}`}>
+          <button>Search</button>
+        </Link>
+      </div>
+        <Routes>
+          <Route path="ActorByCharacter/:search" element={<ActorByCharacter />} />
+          <Route path="CharactersByActor/:search" element={<CharactersByActor />} />
+          <Route path="CharactersByTitle/:search" element={<CharactersByTitle />} />
+        </Routes>
     </React.Fragment>
   )
 }

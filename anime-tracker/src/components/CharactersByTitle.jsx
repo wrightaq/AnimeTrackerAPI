@@ -11,9 +11,11 @@
 //playing the "young" version of characters
 
 //AFTER A COUPLE PAGES 'NAME' BECOMES UNDEFINED FOR SOME REASON AND PAGINATION
-//GETS ALL MESSED UP
-import React from 'react';
-import { useState } from 'react';
+//GETS ALL MESSED UP *After implementing Link one of the One Piece movies had trouble with an undefined name but everything
+//else that was clicked on was fine so may be problem with retrieving data from the api
+//AFTER ADDING IMAGE PAGINATION DOESN'T WORK ANYMORE, it may have stopped working prior to image addition but didn't notice
+import React, { useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery, gql } from "@apollo/client";
 
 const GET_CHARACTER_NAMES_BY_TITLE = gql `
@@ -31,12 +33,18 @@ query GetCharacterNamesByTitle($id: Int, $offset: Int, $limit: Int $search: Stri
       edges {
         node {
           id
+          image {
+            medium
+          }
           name {
             full
           }
         }
         voiceActors (language: JAPANESE) {
           id
+          image {
+            medium
+          }
           name {
             full
           }
@@ -47,17 +55,20 @@ query GetCharacterNamesByTitle($id: Int, $offset: Int, $limit: Int $search: Stri
 }`
 
 
-const CharactersByTitle = ({search}) => {
+const CharactersByTitle = () => {
+  const { search } = useParams();
+
   const [offset, setOffset] = useState(0);
-  console.log(offset)
+
   const { loading, error, data } = useQuery(GET_CHARACTER_NAMES_BY_TITLE, {
     variables: {
       search: search,
       offset: offset,
-      limit: 5
+      limit: 15
       },
   });
 
+  //PAGINATION
   const fetchMoreHandler = () => {
     const currentLength = data?.Media.characters.edges.length || 0
     setOffset((offset) => offset + currentLength)
@@ -76,20 +87,25 @@ const CharactersByTitle = ({search}) => {
 if (loading) return <p>Loading...</p>;
 if (error) return <p>Error : {error.message}</p>;
 
-console.log("data:", data)
-
-return (
-
-  <div>
-    {data?.Media.characters.edges.map(({ node, voiceActors }) => (
+  return (
+    <div>
+      {data?.Media.characters.edges.map(({ node, voiceActors }) => (
         <li key={node.id}>
-          {node.name.full} voiced by {voiceActors[0].name.full}
+          <Link to={`../ActorByCharacter/${node.name.full}`} replace={true}>
+          <img src={node.image.medium} alt='character'/>
+            {node.name.full}
+          </Link>
+            voiced by
+          <Link to={`../CharactersByActor/${voiceActors[0].name.full}`}>
+            {voiceActors[0].name.full}
+            <img src={voiceActors[0].image.medium} alt='actor' />
+          </Link>
         </li>
-    ))}
-    <button onClick={fetchPrevHandler}>back</button>
-    <button onClick={fetchMoreHandler}>more</button>
-  </div>
-)
+      ))}
+      <button onClick={fetchPrevHandler}>back</button>
+      <button onClick={fetchMoreHandler}>more</button>
+    </div>
+  )
 }
 
 export default CharactersByTitle;

@@ -1,8 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import {createBrowserRouter, RouterProvider} from 'react-router-dom';
 import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 import { offsetLimitPagination } from '@apollo/client/utilities'
 import App from './App';
+import ActorByCharacter from './components/ActorByCharacter.jsx';
+import CharactersByActor from './components/CharactersByActor.jsx';
+import CharactersByTitle from './components/CharactersByTitle.jsx';
 
 const client = new ApolloClient({
   uri: 'https://graphql.anilist.co',
@@ -94,35 +98,36 @@ const cache = new InMemoryCache({
 });
 
 // Supported in React 18+
+const router = createBrowserRouter([
+  {
+    path: "/*",
+    element: <App />,
+    children: [
+      {
+        path: "ActorByCharacter/:search",
+        element: <ActorByCharacter />
+      },
+      {
+        path: "CharactersByActor/:search",
+        element: <CharactersByActor />
+      },
+      {
+        path: "CharactersByTitle/:search",
+        element: <CharactersByTitle />
+      }
+    ]
+  },
+  // {
+  //       path: "/ActorByCharacter/:search",
+  //       element: <ActorByCharacter />
+  //     }
+]);
+
 const app = ReactDOM.createRoot(document.getElementById('app'));
 
 app.render(
   <ApolloProvider client={client} cache={cache}>
-    <App />
+    {/* <App /> */}
+    <RouterProvider router={router} />
   </ApolloProvider>,
 );
-
-
-const inMemoryCacheOptions = {
-  addTypename: true,
-  typePolicies: {
-    Repository: {
-      fields: {
-        releases: {
-          keyArgs: false,
-          merge(existing, incoming) {
-            if (!incoming) return existing;
-            if (!existing) return incoming;
-
-            const { nodes, ...rest } = incoming;
-            // We only need to merge the nodes array.
-            // The rest of the fields (pagination) should always be overwritten by incoming
-            let result = rest;
-            result.nodes = [...existing.nodes, ...nodes];
-            return result;
-          }
-        }
-      }
-    }
-  }
-};

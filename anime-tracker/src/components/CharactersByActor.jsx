@@ -1,5 +1,5 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery, gql } from "@apollo/client";
 
 // a header with the voice actors name and image
@@ -11,7 +11,7 @@ import { useQuery, gql } from "@apollo/client";
 
 // clicking title or title image will redirect to character list for that title
 
-//ADD BUTTON TO TEST SEARCH
+//make the list from one title into an optional drop down because too many repeats
 const GET_CHARACTER_NAMES_BY_ACTOR = gql `
 query GetCharacterNamesByActor($id: Int, $offset: Int, $limit: Int $search: String){
   Staff (id: $id, search: $search ) {
@@ -27,12 +27,18 @@ query GetCharacterNamesByActor($id: Int, $offset: Int, $limit: Int $search: Stri
       edges {
         node {
           id
+          image {
+            medium
+          }
           name {
             full
           }
         }
         media {
           id
+          coverImage {
+            medium
+          }
           title {
             english
           }
@@ -42,13 +48,15 @@ query GetCharacterNamesByActor($id: Int, $offset: Int, $limit: Int $search: Stri
   }
 }`
 
-const CharactersByActor = ({search}) => {
+const CharactersByActor = () => {
+  const { search } = useParams();
+
   const [offset, setOffset] = useState(0);
   const { loading, error, data } = useQuery(GET_CHARACTER_NAMES_BY_ACTOR, {
     variables: {
       search: search,
       offset: offset,
-      limit: 5
+      limit: 15
     },
   });
 
@@ -77,16 +85,31 @@ return (
     {data.Staff.characters.edges.map(({ node, media }) => (
       media.length > 1 ?
        <div key={node.id}>
-        {node.name.full} in:
-        {media.map(({title}) => (
+        <Link to={`../ActorByCharacter/${node.name.full}`} replace={true}>
+          <img src={node.image.medium} alt='character'/>
+          {node.name.full}
+        </Link>
+        in:
+        {media.map(({title, coverImage}) => (
           title.english ?
             <li key={media.id}>
-              {title.english}
+              <Link to={`../CharactersByTitle/${title.english}`} replace={true}>
+                {title.english}
+                <img src={coverImage.medium} alt='title' />
+              </Link>
             </li> : null
           ))}
         </div> :
         <li key={node.id}>
-        {node.name.full} in {media[0].title.english}
+          <Link to={`../ActorByCharacter/${node.name.full}`} replace={true}>
+            <img src={node.image.medium} alt='character'/>
+            {node.name.full}
+          </Link>
+          in
+          <Link to={`../CharactersByTitle/${media[0].title.english}`} replace={true}>
+            {media[0].title.english}
+            <img src={media[0].coverImage.medium} alt='title' />
+          </Link>
         </li>
     ))}
     <button onClick={fetchPrevHandler}>back</button>

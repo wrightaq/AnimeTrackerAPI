@@ -1,4 +1,5 @@
-import React,{ useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery, gql } from "@apollo/client";
 
 
@@ -15,9 +16,9 @@ import { useQuery, gql } from "@apollo/client";
 //       anime title redirects to anime title character list (hover opens modal of top 5)
 //MADE IT SO IF NOT ALL INFO IS THERE THEN RETURN NULL BUT I THINK THIS MESSES
 //WITH THE PAGINATION (IS THERE A WAY TO FILTER THE DATA FROM THE QUERY?)
-//ALSO
-//CHANGE TO A REACT ROUTER SYSTEM SINCE THIS WAY OF COMPONENT SWITCHING ISNT WORKING AND IS
-//CURRENTLY UNNECESSARY
+//ALSO: use react router useNavigate to do pagination? navigate(-1)
+
+//try to get the page to reload to the home page without any search information
 const GET_ACTOR_NAME_BY_CHARACTER = gql `
 query GetActorNameByCharacter($id: Int, $offset: Int, $limit: Int $search: String){
   Character (id: $id, search: $search) {
@@ -33,12 +34,18 @@ query GetActorNameByCharacter($id: Int, $offset: Int, $limit: Int $search: Strin
       edges {
         voiceActors (language: JAPANESE) {
           id
+          image {
+            medium
+          }
           name {
             full
           }
         }
         node {
           id
+          coverImage {
+            medium
+          }
           title {
             english
           }
@@ -48,41 +55,18 @@ query GetActorNameByCharacter($id: Int, $offset: Int, $limit: Int $search: Strin
   }
 }`;
 
-
-const ActorByCharacter = ({search}) => {
-  //COMPONENT SWITCH
-  const [component, setComponent] = useState(null)
-  const [newSearch, setNewSearch] = useState('');
-  const [newComponent, setNewComponent] = useState(false);
-  const listItem = useRef('')
-
-  useEffect(() => {
-    listItem.current = newSearch;
-  }, [newSearch])
-
-  const SwitchComponent = location => {
-    const Component = React.lazy(() => import(`./${location}.jsx`));
-    console.log("newSearch", newSearch)
-    setComponent(<Component search={listItem.current} />);
-  };
-
-  // const handleListItem = (event) => {
-  //   setNewSearch(event.target.value)
-  // }
-  const handleNewSearch = (event) => {
-    setNewComponent(prevSetNewComponent => !prevSetNewComponent);
-    setNewSearch(event.target.value);
-    SwitchComponent(event.target.name);
-  };
+const ActorByCharacter = () => {
+  const { search } = useParams();
 
   const [offset, setOffset] = useState(0);
   const { loading, error, data } = useQuery(GET_ACTOR_NAME_BY_CHARACTER, {
     variables: {
       search: search,
       offset: offset,
-      limit: 5
-      },
+      limit: 15
+    },
   });
+
 //PAGINATION
  const fetchMoreHandler = () => {
     const currentLength = data?.Character.media.edges.length || 0
@@ -106,24 +90,25 @@ const ActorByCharacter = ({search}) => {
 
   return (
     <div>
-      <Suspense fallback={<div>Loading...</div>}>
-
-      {newComponent ? component :
       <div>
       {data.Character.media.edges.map(({ node, voiceActors }) => (
         node.title.english ?
         <li key={node.id}>
-          {voiceActors.map(({name}) => (
-            <button value={name.full} name='CharactersByActor' onClick={handleNewSearch}>
+          {voiceActors.map(({name, image}) => (
+            <Link to={`../CharactersByActor/${name.full}`} replace={true}>
+              <img src={image.medium} alt='actor'/>
               {name.full}
-            </button>
-          ))} in {node.title.english}
+            </Link>
+          ))} in
+          <Link to={`../CharactersByTitle/${node.title.english}`} replace={true}>
+          {node.title.english}
+          <img src={node.coverImage.medium} alt='title'/>
+          </Link>
         </li> : null
       ))}
       <button onClick={fetchPrevHandler}>back</button>
       <button onClick={fetchMoreHandler}>more</button>
-      </div>}
-      </Suspense>
+      </div>
     </div>
   )
 }

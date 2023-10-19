@@ -19,6 +19,8 @@ import { useQuery, gql } from "@apollo/client";
 //ALSO: use react router useNavigate to do pagination? navigate(-1)
 
 //try to get the page to reload to the home page without any search information
+
+//IF A CHARACTER HAS MORE THAN ONE ACTOR FILTER OUT THE DOUBLES AND MAKE A DROP DOWN
 const GET_ACTOR_NAME_BY_CHARACTER = gql `
 query GetActorNameByCharacter($id: Int, $offset: Int, $limit: Int $search: String){
   Character (id: $id, search: $search) {

@@ -23,6 +23,10 @@ const App = () => {
     setInput(event.target.value);
   };
 
+  const addToDB = () => {
+
+  }
+
   return (
     <React.Fragment>
       <h1>
@@ -30,7 +34,7 @@ const App = () => {
       </h1>
       <h3>
         Add to watched list:
-        <input placeholder='enter title'></input>
+        <input placeholder='enter title' onChange={handleInput}></input>
         <button>Add</button>
       </h3>
       <div>

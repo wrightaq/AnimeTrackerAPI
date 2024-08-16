@@ -22,34 +22,36 @@ import { useQuery, gql } from "@apollo/client";
 
 //IF A CHARACTER HAS MORE THAN ONE ACTOR FILTER OUT THE DOUBLES AND MAKE A DROP DOWN
 const GET_ACTOR_NAME_BY_CHARACTER = gql `
-query GetActorByCharacter($id: Int, $offset: Int, $limit: Int $search: String){
-  Character (id: $id, search: $search) {
-    id
-    media(page: $offset, perPage: $limit, sort: ID) {
+query GetActorByCharacter($id: Int, $search: String){
+  Page{
       pageInfo {
         total
-        perPage
         currentPage
         lastPage
         hasNextPage
+        perPage
       }
-      edges {
-        voiceActors (language: JAPANESE) {
-          id
-          image {
-            medium
+    characters (id: $id, search: $search, sort: ID) {
+      id
+      media {
+        edges {
+          voiceActors (language: JAPANESE) {
+            id
+            image {
+              medium
+            }
+            name {
+              full
+            }
           }
-          name {
-            full
-          }
-        }
-        node {
-          id
-          coverImage {
-            medium
-          }
-          title {
-            english
+          node {
+            id
+            coverImage {
+              medium
+            }
+            title {
+              english
+            }
           }
         }
       }
@@ -61,18 +63,20 @@ const ActorByCharacter = () => {
   const { search } = useParams();
 
   const [offset, setOffset] = useState(0);
+  const [limit, setLimit] = useState(15);
   const { loading, error, data } = useQuery(GET_ACTOR_NAME_BY_CHARACTER, {
     variables: {
       search: search,
       offset: offset,
-      limit: 15
+      limit: limit
     },
   });
 
 //PAGINATION
  const fetchMoreHandler = () => {
-    const currentLength = data?.Character.media.edges.length || 0
-    setOffset((offset) => offset + currentLength);
+    // const currentLength = data?.Character.media.edges.length || 0
+    // setOffset((offset) => offset + currentLength);
+    setOffset((offset) => offset + limit)
   }
 
   const fetchPrevHandler = () => {
@@ -89,11 +93,12 @@ const ActorByCharacter = () => {
   if (error) return <p>Error : {error.message}</p>;
 
   console.log("data:", data)
+  console.log("offset", offset)
 
   return (
     <div>
       <div>
-      {data.Character.media.edges.map(({ node, voiceActors }) => (
+      {data.Page.characters[0].media.edges.map(({ node, voiceActors }) => (
         node.title.english ?
         <li key={node.id}>
           {voiceActors.map(({name, image}) => (

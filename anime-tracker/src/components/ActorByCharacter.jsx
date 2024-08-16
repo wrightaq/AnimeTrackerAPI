@@ -8,7 +8,7 @@ import { useQuery, gql } from "@apollo/client";
 //       List of cards:
 //       image of actor next to image of character
 //       next to images is header of actors name
-//       below actors name and next to images in smaller text is character name in anime title
+//       below actors  and next to images in smaller text is character name in anime title
 //       hamburger that shows dropdown to do comparisons
 
 //       image of actor and their name redirects to actors character List
@@ -22,7 +22,7 @@ import { useQuery, gql } from "@apollo/client";
 
 //IF A CHARACTER HAS MORE THAN ONE ACTOR FILTER OUT THE DOUBLES AND MAKE A DROP DOWN
 const GET_ACTOR_NAME_BY_CHARACTER = gql `
-query GetActorNameByCharacter($id: Int, $offset: Int, $limit: Int $search: String){
+query GetActorByCharacter($id: Int, $offset: Int, $limit: Int $search: String){
   Character (id: $id, search: $search) {
     id
     media(page: $offset, perPage: $limit, sort: ID) {

@@ -1,8 +1,11 @@
 const gql = require("graphql-tag");
 const typeDefs = gql`
 
+"Queries"
 type Query {
-
+  title: [Title]
+  characters: [Character]
+  voiceActor: [VoiceActor]
 }
 
 "Title of an anime"
@@ -35,5 +38,14 @@ type Query {
   }
 
 `;
-
-module.exports = typeDefs;
+const resolvers = {
+  Query: {
+    title: () => title,
+    character: () => character,
+    voiceActor: () => voiceActor,
+  },
+};
+module.exports = {
+  typeDefs,
+  resolvers
+}

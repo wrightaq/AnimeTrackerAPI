@@ -21,6 +21,8 @@ import { useQuery, gql } from "@apollo/client";
 //try to get the page to reload to the home page without any search information
 
 //IF A CHARACTER HAS MORE THAN ONE ACTOR FILTER OUT THE DOUBLES AND MAKE A DROP DOWN
+
+//*** ADDED PAGE TO QUERY FOR PAGINATION. NEED TO UPDATE OFFSET AND LIMIT TO MATCH NEW QUERY
 const GET_ACTOR_NAME_BY_CHARACTER = gql `
 query GetActorByCharacter($id: Int, $search: String){
   Page{

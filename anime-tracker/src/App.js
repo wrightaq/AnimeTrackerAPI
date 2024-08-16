@@ -30,7 +30,7 @@ const App = () => {
   return (
     <React.Fragment>
       <h1>
-        Seiyuu x SeiyWho? or Who Dat?
+        Seiyuu x SeiyWho?
       </h1>
       <h3>
         Add to watched list:

@@ -63,74 +63,40 @@ query GetActorByCharacter($id: Int, $page: Int, $perPage: Int, $search: String){
 
 const ActorByCharacter = () => {
   const { search } = useParams();
+  const [page, setPage] = useState(0);
+  const [perPage, setPerPage] = useState(5);
 
-  // const [offset, setOffset] = useState(0);
-  // const [limit, setLimit] = useState(15);
   const { loading, error, data, fetchMore } = useQuery(GET_ACTOR_NAME_BY_CHARACTER, {
     variables: {
       search: search,
+      page: page,
+      perPage: 5
     },
   });
 
-//PAGINATION
-//  const fetchMoreHandler = () => {
-//     // const currentLength = data?.Character.media.edges.length || 0
-//     // setOffset((offset) => offset + currentLength);
-//     setOffset((offset) => offset + limit)
-//   }
-
-  // const fetchPrevHandler = () => {
-  //   // let currentLength = data.Page.characters[0].media.edges.length || 0
-  //   // if (currentLength === 0) {
-  //   //   currentLength = 2
-  //   // }
-  //   // setOffset((offset) =>
-  //   // offset - currentLength < 0 ? 0 : offset - currentLength
-  //   // )
-  //   setOffset((offset) => offset - limit)
-  // }
+  // const nextPage = () => {
+  //   fetchMore({
+  //     variables: {
+  //       offset: offset + limit,
+  //       limit: limit
+  //     },
+  //     updateQuery: (prev, {fetchMoreResult}) => {
+  //       if (!fetchMoreResult) return prev;
+  //       return fetchMoreResult;
+  //     }
+  //   });
+  // };
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error : {error.message}</p>;
 
-  // const nodes = data.Page.characters[0].media.edges.map((edge) => edge.node);
-  const nodes = data.Page.characters[0].media.edges.map(({ node, voiceActors }) => (
-    node.title.english ?
-    <li key={node.id}>
-      {voiceActors.map(({name, image}) => (
-        <Link to={`../CharactersByActor/${name.full}`} replace={true}>
-          <img src={image.medium} alt='actor'/>
-          {name.full}
-        </Link>
-      ))} in
-      <Link to={`../CharactersByTitle/${node.title.english}`} replace={true}>
-      {node.title.english}
-      <img src={node.coverImage.medium} alt='title'/>
-      </Link>
-    </li> : null
-  ))
-  const pageInfo = data.Page.pageInfo;
-
   console.log("data:", data)
-  console.log("nodes", nodes)
-  console.log("pageInfo", pageInfo)
+  console.log("page:", page)
+  console.log("perPage", perPage)
+  console.log("search:", search)
 
   return (
     <div>
-      <Characters
-        entries={nodes}
-        onLoadMore={() => {
-          if (pageInfo.hasNextPage) {
-            fetchMore({
-              variables: {
-                cursor: pageInfo.currentPage
-              }
-            })
-          }
-        }}
-      />
-      <button onClick={onLoadMore}>More</button>
-      {/* <div>
       {data.Page.characters[0].media.edges.map(({ node, voiceActors }) => (
         node.title.english ?
         <li key={node.id}>
@@ -147,8 +113,7 @@ const ActorByCharacter = () => {
         </li> : null
       ))}
       <button>back</button>
-      <button>more</button>
-      </div> */}
+      <button onClick={() => fetchMore({variables:{page: page + perPage}})}>more</button>
     </div>
   )
 }

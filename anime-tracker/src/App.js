@@ -23,6 +23,19 @@ const App = () => {
     setInput(event.target.value);
   };
 
+  // const nextPage = () => {
+  //   fetchMore({
+  //     variables: {
+  //       offset: offset + limit,
+  //       limit: limit
+  //     },
+  //     updateQuery: (prev, {fetchMoreResult}) => {
+  //       if (!fetchMoreResult) return prev;
+  //       return fetchMoreResult;
+  //     }
+  //   });
+  // };
+
   const addToDB = () => {
 
   }

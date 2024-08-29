@@ -24,15 +24,15 @@ import { useQuery, gql } from "@apollo/client";
 
 //*** ADDED PAGE TO QUERY FOR PAGINATION. NEED TO UPDATE OFFSET AND LIMIT TO MATCH NEW QUERY
 const GET_ACTOR_NAME_BY_CHARACTER = gql `
-query GetActorByCharacter($id: Int, $search: String){
-  Page{
-      pageInfo {
-        total
-        currentPage
-        lastPage
-        hasNextPage
-        perPage
-      }
+query GetActorByCharacter($id: Int, $page: Int, $perPage: Int, $search: String){
+  Page (page: $page, perPage: $perPage) {
+    pageInfo {
+      total
+      currentPage
+      lastPage
+      hasNextPage
+      perPage
+    }
     characters (id: $id, search: $search, sort: ID) {
       id
       media {
@@ -64,42 +64,73 @@ query GetActorByCharacter($id: Int, $search: String){
 const ActorByCharacter = () => {
   const { search } = useParams();
 
-  const [offset, setOffset] = useState(0);
-  const [limit, setLimit] = useState(15);
-  const { loading, error, data } = useQuery(GET_ACTOR_NAME_BY_CHARACTER, {
+  // const [offset, setOffset] = useState(0);
+  // const [limit, setLimit] = useState(15);
+  const { loading, error, data, fetchMore } = useQuery(GET_ACTOR_NAME_BY_CHARACTER, {
     variables: {
       search: search,
-      offset: offset,
-      limit: limit
     },
   });
 
 //PAGINATION
- const fetchMoreHandler = () => {
-    // const currentLength = data?.Character.media.edges.length || 0
-    // setOffset((offset) => offset + currentLength);
-    setOffset((offset) => offset + limit)
-  }
+//  const fetchMoreHandler = () => {
+//     // const currentLength = data?.Character.media.edges.length || 0
+//     // setOffset((offset) => offset + currentLength);
+//     setOffset((offset) => offset + limit)
+//   }
 
-  const fetchPrevHandler = () => {
-    let currentLength = data?.Character.media.edges.length || 0
-    if (currentLength === 0) {
-      currentLength = 2
-    }
-    setOffset((offset) =>
-    offset - currentLength < 0 ? 0 : offset - currentLength
-    )
-  }
+  // const fetchPrevHandler = () => {
+  //   // let currentLength = data.Page.characters[0].media.edges.length || 0
+  //   // if (currentLength === 0) {
+  //   //   currentLength = 2
+  //   // }
+  //   // setOffset((offset) =>
+  //   // offset - currentLength < 0 ? 0 : offset - currentLength
+  //   // )
+  //   setOffset((offset) => offset - limit)
+  // }
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error : {error.message}</p>;
 
+  // const nodes = data.Page.characters[0].media.edges.map((edge) => edge.node);
+  const nodes = data.Page.characters[0].media.edges.map(({ node, voiceActors }) => (
+    node.title.english ?
+    <li key={node.id}>
+      {voiceActors.map(({name, image}) => (
+        <Link to={`../CharactersByActor/${name.full}`} replace={true}>
+          <img src={image.medium} alt='actor'/>
+          {name.full}
+        </Link>
+      ))} in
+      <Link to={`../CharactersByTitle/${node.title.english}`} replace={true}>
+      {node.title.english}
+      <img src={node.coverImage.medium} alt='title'/>
+      </Link>
+    </li> : null
+  ))
+  const pageInfo = data.Page.pageInfo;
+
   console.log("data:", data)
-  console.log("offset", offset)
+  console.log("nodes", nodes)
+  console.log("pageInfo", pageInfo)
 
   return (
     <div>
-      <div>
+      <Characters
+        entries={nodes}
+        onLoadMore={() => {
+          if (pageInfo.hasNextPage) {
+            fetchMore({
+              variables: {
+                cursor: pageInfo.currentPage
+              }
+            })
+          }
+        }}
+      />
+      <button onClick={onLoadMore}>More</button>
+      {/* <div>
       {data.Page.characters[0].media.edges.map(({ node, voiceActors }) => (
         node.title.english ?
         <li key={node.id}>
@@ -115,9 +146,9 @@ const ActorByCharacter = () => {
           </Link>
         </li> : null
       ))}
-      <button onClick={fetchPrevHandler}>back</button>
-      <button onClick={fetchMoreHandler}>more</button>
-      </div>
+      <button>back</button>
+      <button>more</button>
+      </div> */}
     </div>
   )
 }

@@ -1,5 +1,44 @@
+//FIGURE OUT NESTED SCHEMA STRUCTURE SO THAT CACHE, FIELD,
+//AND TYPEPOLICIES CAN BE UPDATED AND NESTED CORRECTLY TOO
+//IS PAGE SUPPOSED TO BE IGNORED? PAGE WILL BE WRAPPING
+//EVERY QUERY FOR PAGINATION
 const gql = require("graphql-tag");
 const typeDefs = gql`
+
+type Page {
+  actorsByCharacter: ActorByCharacter
+}
+type ActorByCharacter {
+
+}
+type ActorByCharacter {
+  Page: {
+    characters: [{
+      media:{
+        edges(MediaConnection): [{
+          node(MediaEdge): {
+            id: Int,
+            coverImage(MediaCoverImage): {
+              medium: String
+            }
+          }
+        }, {
+          voiceActors(Staff): [{
+            id: Int,
+            image(StaffImage): {
+              medium: String
+            },
+            name(StaffName): {
+              full: String
+            }
+          }]
+        }]
+      }
+    }]
+  }
+}
+
+
 
 "Queries"
 type Query {

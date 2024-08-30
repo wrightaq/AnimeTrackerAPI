@@ -24,8 +24,8 @@ import { useQuery, gql } from "@apollo/client";
 
 //*** DATA IS NOT RETURNING BASED ON PERPAGE VARIABLE. THEN NEED TO FIX FETCHMORE
 const GET_ACTOR_NAME_BY_CHARACTER = gql `
-query GetActorByCharacter($id: Int, $page: Int, $perPage: Int, $search: String){
-  Page (page: $page, perPage: $perPage) {
+query GetActorByCharacter($id: Int, $offset: Int, $limit: Int, $search: String){
+  Page (page: $offset, perPage: $limit) {
     pageInfo {
       total
       currentPage
@@ -35,7 +35,7 @@ query GetActorByCharacter($id: Int, $page: Int, $perPage: Int, $search: String){
     }
     characters (id: $id, search: $search, sort: ID) {
       id
-      media (page: $page, perPage: $perPage) {
+      media (page: $offset, perPage: $limit) {
         edges {
           voiceActors (language: JAPANESE) {
             id
@@ -66,11 +66,17 @@ const ActorByCharacter = () => {
   const [page, setPage] = useState(0);
   const [perPage, setPerPage] = useState(5);
 
+  const onLoadMore = () => fetchMore({
+    variables: {
+      offset: page + perPage
+    }
+  })
+
   const { loading, error, data, fetchMore } = useQuery(GET_ACTOR_NAME_BY_CHARACTER, {
     variables: {
       search: search,
-      page: page,
-      perPage: perPage
+      offset: page,
+      limit: perPage
     },
   });
 
@@ -113,7 +119,7 @@ const ActorByCharacter = () => {
         </li> : null
       ))}
       <button>back</button>
-      <button onClick={() => fetchMore({variables:{page: page + perPage}})}>more</button>
+      <button onClick={fetchMore({variables:{offset: page + perPage}})}>more</button>
     </div>
   )
 }

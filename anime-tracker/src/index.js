@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {createBrowserRouter, RouterProvider} from 'react-router-dom';
 import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
-import { relayStylePagination } from '@apollo/client/utilities'
+import { offsetLimitPagination } from '@apollo/client/utilities'
 import App from './App';
 import ActorByCharacter from './components/ActorByCharacter.jsx';
 import CharactersByActor from './components/CharactersByActor.jsx';
@@ -15,9 +15,9 @@ const client = new ApolloClient({
 
 const cache = new InMemoryCache({
   typePolicies: {
-    Page: {
+    Character: {
       fields: {
-        characters: relayStylePagination(),
+        media: offsetLimitPagination(),
       },
     },
   },

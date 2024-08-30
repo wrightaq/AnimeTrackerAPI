@@ -22,7 +22,7 @@ import { useQuery, gql } from "@apollo/client";
 
 //IF A CHARACTER HAS MORE THAN ONE ACTOR FILTER OUT THE DOUBLES AND MAKE A DROP DOWN
 
-//*** ADDED PAGE TO QUERY FOR PAGINATION. NEED TO UPDATE OFFSET AND LIMIT TO MATCH NEW QUERY
+//*** DATA IS NOT RETURNING BASED ON PERPAGE VARIABLE. THEN NEED TO FIX FETCHMORE
 const GET_ACTOR_NAME_BY_CHARACTER = gql `
 query GetActorByCharacter($id: Int, $page: Int, $perPage: Int, $search: String){
   Page (page: $page, perPage: $perPage) {
@@ -35,7 +35,7 @@ query GetActorByCharacter($id: Int, $page: Int, $perPage: Int, $search: String){
     }
     characters (id: $id, search: $search, sort: ID) {
       id
-      media {
+      media (page: $page, perPage: $perPage) {
         edges {
           voiceActors (language: JAPANESE) {
             id
@@ -70,7 +70,7 @@ const ActorByCharacter = () => {
     variables: {
       search: search,
       page: page,
-      perPage: 5
+      perPage: perPage
     },
   });
 
